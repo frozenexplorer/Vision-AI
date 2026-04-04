@@ -36,6 +36,8 @@ cd frontend
 npm install
 ```
 
+From the **repo root** you can also run `npm start`, `npm run android`, and `npm run ios` (they delegate to `frontend/`). You still need `npm install` inside `frontend/` first so `node_modules` exists there.
+
 ---
 
 ## 2. Git hooks (one-time)
@@ -61,66 +63,18 @@ Allowed branch names: `develop`, `HEAD`, or `feature/<slug>`, `bugfix/<slug>`, `
 
 ## 3. Frontend
 
-### 3.1 Android SDK and local.properties
+### 3.1 Android SDK and `local.properties`
+
+The `prebuild` script runs `scripts/setup-local-properties.js` to create or update `android/local.properties` with `sdk.dir`. Without it you may see "SDK location not found".
 
 From `frontend/`:
-
-```bash
-cd frontend
-npm install
-```
-
-Or run frontend commands from root (no need to `cd frontend` for install if you use root scripts):
-
-```bash
-npm start          # same as: cd frontend && npm start
-npm run android
-npm run ios
-```
-
-First time you should run `npm install` inside `frontend/` so `node_modules` is created there.
-
-### Start the dev server
-
-**From root:**
-
-```bash
-npm start
-```
-
-**From frontend folder:**
-
-```bash
-cd frontend
-npm start
-```
-
-### Run the app
-
-- **Android emulator**: Run `npm run android` (requires Android Studio). Or use the two-step flow: start Metro with `npm run start`, then in another terminal run `npm run android:install-dev` (this script forwards port 8081 so the app can reach Metro).
-- **iOS simulator** (macOS only): Run `npm run ios` (requires Xcode). See [iOS setup](#ios-setup-mac-only) below.
-- **Physical device**: Run `npm run android:install-dev` for a dev build, then connect via USB and ensure USB debugging is enabled.
-
-### Android native build (dev client / New Architecture)
-
-The app uses React Native’s **New Architecture** and builds native code with **NDK 26**.
-
-- **NDK version:** The project pins **NDK 26.1.10909125**. Install it in **Android Studio → SDK Manager → SDK Tools** → enable "Show Package Details" → under **NDK** select **26.1.10909125** → Apply.
-- **Patched header:** A patch is applied to React Native’s `graphicsConversions.h` (for NDK 26’s C++ stdlib). It is applied automatically when you run `npm install` in `frontend/` (via `patch-package`). The app’s Gradle/CMake setup copies this patched header and passes it to the native build so both the app and autolinked libraries use it.
-- **First native build:** From `frontend/` run `npm run android:install-dev` (or from `frontend/android`: `./gradlew installDevDebug` on macOS/Linux, `gradlew.bat installDevDebug` on Windows). The first build can take several minutes.
-
-#### Prebuild and `local.properties`
-
-The `prebuild` script runs `scripts/setup-local-properties.js` to create or update `android/local.properties` with the correct `sdk.dir`. Without this file you may see "SDK location not found" errors.
-
-**Solution:** Run the prebuild script from `frontend/`:
 
 ```bash
 cd frontend
 npm run prebuild
 ```
 
-This creates `android/local.properties` (sdk.dir). The script uses `ANDROID_HOME` or `ANDROID_SDK_ROOT`, or default paths (`%LOCALAPPDATA%\Android\Sdk` on Windows, `~/Android/Sdk` on macOS/Linux). Set `ANDROID_HOME` if the script cannot find the SDK.
+The script uses `ANDROID_HOME` or `ANDROID_SDK_ROOT`, or defaults (`%LOCALAPPDATA%\Android\Sdk` on Windows, `~/Android/Sdk` on macOS/Linux). Set `ANDROID_HOME` if the SDK is not found.
 
 ### 3.2 Environment and Firebase
 
@@ -147,11 +101,11 @@ Firebase config is **not** committed. `google-services.json` is generated at bui
 | `FIREBASE_OAUTH_ANDROID_CLIENT_ID`     | No       | Android OAuth client (main)                    |
 | `FIREBASE_OAUTH_ANDROID_CLIENT_ID_DEV` | No       | Android OAuth client (dev)                     |
 
-Do not commit `.env`. The build scripts run `scripts/generate-google-services.js` and write `android/app/google-services.json` before Gradle.
+Do not commit `.env`. Build scripts run `scripts/generate-google-services.js` and write `android/app/google-services.json` before Gradle.
 
 **Firebase Authentication:** In Firebase Console → Authentication → Sign-in method, enable **Email/Password** and **Google**. For Google Sign-In issues (e.g. `DEVELOPER_ERROR`), see [frontend/docs/GOOGLE_SIGNIN_SETUP.md](frontend/docs/GOOGLE_SIGNIN_SETUP.md).
 
-### 3.3 Run the app
+### 3.3 Run the app (Metro, Android, iOS)
 
 **Metro (required for dev):**
 
@@ -160,28 +114,29 @@ cd frontend
 npm start
 ```
 
-**Android (separate terminal):**
+**From repo root:** `npm start` (same as above).
 
-```bash
-cd frontend
-npm run android
-# or: npm run android:install-dev   # installs dev debug + adb reverse 8081
-```
+**Android**
 
-**iOS (macOS):**
+- Emulator: `cd frontend && npm run android` (requires Android Studio), or start Metro then `npm run android:install-dev` (installs dev debug and runs `adb reverse tcp:8081 tcp:8081`).
+- Physical device: USB debugging on; use `npm run android:install-dev`; Metro must be running.
+
+**iOS (macOS)**
 
 ```bash
 cd frontend
 npm run ios
 ```
 
-**Physical device:** USB debugging enabled, device connected. Use `npm run android:install-dev`; Metro must be running.
+See [§3.7 iOS setup](#37-ios-setup-mac-only) for CocoaPods and `GoogleService-Info.plist`.
 
-### 3.4 Native build (Android)
+### 3.4 Native build (Android / New Architecture)
 
-- **NDK:** 26.1.10909125 (Android Studio → SDK Manager → SDK Tools → NDK, enable “Show Package Details”).
-- **Patched header:** Applied via `patch-package` on `npm install`; Gradle uses it for the native build.
-- First build: `npm run android:install-dev` from `frontend/` (several minutes).
+The app uses React Native **New Architecture** and **NDK 26**.
+
+- **NDK:** **26.1.10909125** — Android Studio → SDK Manager → SDK Tools → show package details → NDK → **26.1.10909125** → Apply.
+- **Patched header:** `patch-package` applies a React Native `graphicsConversions.h` patch on `npm install` in `frontend/`. Gradle/CMake use it so the app and autolinked libraries build with NDK 26.
+- **First native build:** From `frontend/` run `npm run android:install-dev`, or from `frontend/android`: `./gradlew installDevDebug` (macOS/Linux) / `gradlew.bat installDevDebug` (Windows). First build can take several minutes.
 
 ### 3.5 Release APK
 
@@ -190,43 +145,45 @@ cd frontend
 npm run android:apk
 ```
 
-Output: `frontend/android/app/build/outputs/apk/dev/release/app-dev-release.apk` (arm64 only). For emulator, use `npm run android:install-dev`.
+Output: `frontend/android/app/build/outputs/apk/dev/release/app-dev-release.apk` (arm64 only). For emulator workflows, prefer `npm run android:install-dev`.
 
-#### iOS setup (Mac only)
-
-The `frontend/ios/` folder is committed and ready. You can set it up and build when you have a Mac:
-
-1. **Install CocoaPods**: `sudo gem install cocoapods`
-2. **Install pods**: `cd frontend/ios && pod install`
-3. **Add Firebase**: In Firebase Console, add an iOS app with bundle ID `com.anonymous.VisionAI`, download `GoogleService-Info.plist`, and place it in `frontend/ios/VisionAI/`
-4. **Run**: `npm run ios` from repo root
-
-Without a Mac, you can still edit JS/TS code; the iOS native project is ready to build once you have Xcode.
-
-### Frontend environment variables
-
-Create `frontend/.env` from `frontend/.env.example`. Required for Google Sign-In:
-
-### 3.6 Frontend env reference
+### 3.6 Frontend environment variables
 
 | Variable               | Description                                                                                  |
 | ---------------------- | -------------------------------------------------------------------------------------------- |
 | `GOOGLE_WEB_CLIENT_ID` | Firebase Web client ID                                                                       |
 | `API_URL`              | Backend API base URL (default: emulator `http://10.0.2.2:8000`, iOS `http://127.0.0.1:8000`) |
 
+Copy `frontend/.env.example` to `frontend/.env` and fill Firebase/Google values (see §3.2).
+
+**Code style (optional):** From `frontend/`, `npm run format` / `npm run format:check` (Prettier).
+
+### 3.7 iOS setup (Mac only)
+
+The `frontend/ios/` project is in the repo. On a Mac:
+
+1. Install CocoaPods: `sudo gem install cocoapods`
+2. Install pods: `cd frontend/ios && pod install`
+3. **Firebase:** In Firebase Console, add an iOS app with bundle ID `com.anonymous.VisionAI`, download `GoogleService-Info.plist`, place it in `frontend/ios/VisionAI/` (or the app target folder your project uses).
+4. Run: `npm run ios` from repo root or `frontend/`.
+
+Without a Mac you can still work on JS/TS; build iOS when Xcode is available.
+
 ---
 
 ## 4. CI (GitHub Actions)
 
-Workflow: `.github/workflows/android-dev-apk-cd.yml` (builds dev release APK on push to `main` or manual dispatch).
+Workflow: `.github/workflows/android-dev-apk-cd.yml` — dev release APK on push to `main` or manual dispatch.
 
 **Required secret:** `FIREBASE_ENV`
 
 - **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
 - Name: `FIREBASE_ENV`
-- Value: full contents of `frontend/.env` (Firebase/Google vars only; used to generate `google-services.json` in CI)
+- Value: full contents of `frontend/.env` (same Firebase/Google vars as locally; used to generate `google-services.json` in CI)
 
 Without `FIREBASE_ENV`, the Android APK job fails.
+
+CI also runs `.github/workflows/ci.yml` (backend checks and frontend type-check).
 
 ---
 
@@ -283,4 +240,4 @@ The `models/` directory holds ML assets. Document expected formats and loading i
 | iOS                         | `cd frontend && npm run ios`                 |
 | Git hooks                   | `git config core.hooksPath .githooks`        |
 
-For project overview and branching, see [README.md](README.md).
+For overview and branching, see [README.md](README.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
