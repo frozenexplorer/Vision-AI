@@ -39,6 +39,6 @@ if (!fs.existsSync(dir)) {
 
 fs.writeFileSync(localPropsPath, content, 'utf8');
 console.log(
-  '[setup-local-properties] Wrote android/local.properties with sdk.dir=',
-  sdkDir,
+  '[setup-local-properties] Wrote android/local.properties with sdk.dir (value not logged for privacy).',
 );
+
