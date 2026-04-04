@@ -78,10 +78,7 @@ models/**
 # Mayukh PC
 .idea/
 .vscode/
-docs/
+/docs/
 android_app/
 runs/
 a.py
-
-# Mit PC
-batman-development/
