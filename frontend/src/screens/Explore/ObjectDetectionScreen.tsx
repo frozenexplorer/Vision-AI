@@ -7,7 +7,11 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useIsFocused, useNavigation } from '@react-navigation/native';
+import {
+  useIsFocused,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import CameraView from '../../components/CameraView';
@@ -16,6 +20,7 @@ import { useExplorePermissions } from './hooks';
 
 const ObjectDetectionScreen = () => {
   const navigation = useNavigation();
+  const route = useRoute();
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const isFocused = useIsFocused();
@@ -24,6 +29,9 @@ const ObjectDetectionScreen = () => {
   const [facing, setFacing] = useState<'back' | 'front'>('back');
   const slideAnim = useRef(new Animated.Value(40)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const autoStartRequestedRef = useRef(
+    Boolean((route.params as { autoStart?: boolean } | undefined)?.autoStart),
+  );
 
   useEffect(() => {
     Animated.parallel([
@@ -54,6 +62,12 @@ const ObjectDetectionScreen = () => {
   useEffect(() => {
     void handlePermissionButtonPress();
   }, []);
+
+  useEffect(() => {
+    if (!autoStartRequestedRef.current || !canUseCamera) return;
+    setIsLiveDetectionEnabled(true);
+    autoStartRequestedRef.current = false;
+  }, [canUseCamera]);
 
   return (
     <View

@@ -1,95 +1,23 @@
-import { useEffect, useRef, useState } from 'react';
-import { Animated, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
-
-const BAR_COUNT = 8;
-const BAR_MIN = 0.15;
-const BAR_MAX = 1;
-
-type SoundWaveBarsProps = { isActive: boolean; barColor?: string };
-function SoundWaveBars({ isActive, barColor = '#6366F1' }: SoundWaveBarsProps) {
-  const bars = useRef(
-    Array.from({ length: BAR_COUNT }, () => new Animated.Value(BAR_MIN)),
-  ).current;
-
-  useEffect(() => {
-    if (!isActive) {
-      bars.forEach(b => b.setValue(BAR_MIN));
-      return;
-    }
-
-    const STAGGER = 60;
-    const DURATION = 120;
-
-    const waveForward = Animated.parallel(
-      bars.map((bar, i) =>
-        Animated.sequence([
-          Animated.delay(i * STAGGER),
-          Animated.timing(bar, {
-            toValue: BAR_MAX,
-            useNativeDriver: true,
-            duration: DURATION,
-          }),
-        ]),
-      ),
-    );
-
-    const waveBack = Animated.parallel(
-      bars.map((bar, i) =>
-        Animated.sequence([
-          Animated.delay((BAR_COUNT - 1 - i) * STAGGER),
-          Animated.timing(bar, {
-            toValue: BAR_MIN,
-            useNativeDriver: true,
-            duration: DURATION,
-          }),
-        ]),
-      ),
-    );
-
-    const loop = Animated.loop(Animated.sequence([waveForward, waveBack]), {
-      iterations: -1,
-    });
-    loop.start();
-    return () => loop.stop();
-  }, [isActive]);
-
-  return (
-    <View className="flex-row items-center justify-center gap-1.5 mb-1 h-7">
-      {bars.map((bar, i) => {
-        const scaleY = bar.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0.12, 1],
-        });
-        const translateY = bar.interpolate({
-          inputRange: [0, 1],
-          outputRange: [11, 0],
-        });
-        return (
-          <View key={`bar-${i}`} className="w-1 h-6 items-center justify-end">
-            <Animated.View
-              className="w-1 h-6 rounded-sm"
-              style={[
-                {
-                  backgroundColor: barColor,
-                  transform: [{ scaleY }, { translateY }],
-                },
-              ]}
-            />
-          </View>
-        );
-      })}
-    </View>
-  );
-}
+import { SoundWaveBars } from './components';
+import { useVoiceMode } from './useVoiceMode';
 
 const VoiceScreen = () => {
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
-  const [isListening, setIsListening] = useState<boolean>(false);
   const accent = theme.tabVoice;
+
+  const {
+    voiceAvailability,
+    isAssistantEnabled,
+    heardText,
+    assistantReply,
+    statusText,
+    toggleAssistant,
+  } = useVoiceMode();
 
   return (
     <View
@@ -107,41 +35,58 @@ const VoiceScreen = () => {
         <TouchableOpacity
           className="w-40 h-40 rounded-full mb-7 border-2 justify-center items-center"
           style={{
-            backgroundColor: isListening ? `${accent}12` : theme.cardBg,
-            borderColor: isListening ? accent : `${accent}35`,
+            backgroundColor: isAssistantEnabled ? `${accent}12` : theme.cardBg,
+            borderColor: isAssistantEnabled ? accent : `${accent}35`,
           }}
           activeOpacity={0.9}
-          onPress={() => setIsListening(p => !p)}>
+          onPress={toggleAssistant}>
           <Ionicons name="mic" size={64} color={accent} />
         </TouchableOpacity>
 
-        <SoundWaveBars isActive={isListening} barColor={accent} />
+        <SoundWaveBars isActive={isAssistantEnabled} barColor={accent} />
 
         <Text
-          className="text-[13px] font-bold tracking-widest mb-8"
-          style={{ color: isListening ? accent : theme.white }}>
-          {isListening ? 'LISTENING...' : 'TAP TO START'}
+          className="text-[13px] font-bold tracking-widest mb-8 text-center"
+          style={{ color: isAssistantEnabled ? accent : theme.white }}>
+          {statusText}
         </Text>
 
         <TouchableOpacity
           className="rounded-[14px] py-4 px-7 min-w-[260px] flex-row items-center justify-center gap-2.5 border"
           style={{
-            backgroundColor: isListening ? accent : theme.cardBg,
-            borderColor: isListening ? 'transparent' : `${accent}40`,
+            backgroundColor: isAssistantEnabled ? accent : theme.cardBg,
+            borderColor: isAssistantEnabled ? 'transparent' : `${accent}40`,
           }}
           activeOpacity={0.8}
-          onPress={() => setIsListening(p => !p)}>
+          onPress={toggleAssistant}
+          disabled={voiceAvailability === 'checking'}>
           <Ionicons
-            name={isListening ? 'stop-circle' : 'mic'}
+            name={isAssistantEnabled ? 'stop-circle' : 'mic'}
             size={24}
-            color={isListening ? theme.white : accent}
+            color={isAssistantEnabled ? theme.white : accent}
           />
           <Text
             className="text-[15px] font-bold"
-            style={{ color: isListening ? theme.white : accent }}>
-            {isListening ? 'Stop Listening' : 'Start Listening'}
+            style={{ color: isAssistantEnabled ? theme.white : accent }}>
+            {isAssistantEnabled ? 'Stop Assistant' : 'Start Assistant'}
           </Text>
         </TouchableOpacity>
+
+        <View className="mt-5 min-h-[68px] max-w-[330px]">
+          <Text
+            className="text-center text-[12px] leading-5"
+            style={{ color: theme.grey }}>
+            {heardText ? `Heard: "${heardText}"` : assistantReply}
+          </Text>
+        </View>
+
+        <View className="mt-1 max-w-[330px]">
+          <Text
+            className="text-center text-[11px] leading-5"
+            style={{ color: theme.muted }}>
+            {`Example: "Start object detection"`}
+          </Text>
+        </View>
       </View>
     </View>
   );

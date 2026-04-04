@@ -7,8 +7,12 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useDispatch } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScreenNames } from '@/configs/navigation';
+import type { ISettingsStackParamList } from '@/screens/screens.types';
 import { useTheme, THEMES, type ThemeId } from '@/theme';
 import { useBackHandler } from '@/navigators';
 import { useAuth } from '@/auth/AuthContext';
@@ -35,8 +39,11 @@ const PROFILE_OPTIONS = [
   },
 ];
 
+type SettingsStackNav = NativeStackNavigationProp<ISettingsStackParamList>;
+
 const ProfileScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigation = useNavigation<SettingsStackNav>();
   const insets = useSafeAreaInsets();
   const { user, signOut, authAvailable } = useAuth();
   const { theme, themeId, setTheme } = useTheme();
@@ -145,7 +152,12 @@ const ProfileScreen = () => {
               key={item.id}
               className="flex-row items-center p-4 rounded-2xl mb-3"
               style={{ backgroundColor: theme.cardBg }}
-              activeOpacity={0.8}>
+              activeOpacity={0.8}
+              onPress={() => {
+                if (item.id === 'personal') {
+                  navigation.navigate(ScreenNames.PersonalDetails);
+                }
+              }}>
               <View
                 className="w-12 h-12 rounded-full items-center justify-center mr-4"
                 style={{ backgroundColor: theme.cardBgLight }}>

@@ -3,6 +3,7 @@ import { ScreenNames } from '@/configs/navigation';
 import type { ISettingsStackParamList } from '@/screens/screens.types';
 import SettingsListScreen from './SettingsListScreen';
 import { ProfileScreen } from '@/screens/Profile';
+import { PersonalDetailsScreen } from '@/screens/PersonalDetails';
 import { VoiceAndAudioScreen } from '@/screens/VoiceAndAudio';
 import { VisionSettingsScreen } from '@/screens/VisionSettings';
 import { ConnectedDevicesScreen } from '@/screens/ConnectedDevices';
@@ -22,6 +23,10 @@ const SettingsStack = () => (
       component={SettingsListScreen}
     />
     <Stack.Screen name={ScreenNames.Profile} component={ProfileScreen} />
+    <Stack.Screen
+      name={ScreenNames.PersonalDetails}
+      component={PersonalDetailsScreen}
+    />
     <Stack.Screen
       name={ScreenNames.VoiceAndAudio}
       component={VoiceAndAudioScreen}

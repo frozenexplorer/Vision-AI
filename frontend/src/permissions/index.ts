@@ -6,3 +6,4 @@ export {
   statusToPermission,
   type CameraPermissionResult,
 } from './camera';
+export { ensureMicrophonePermission } from './microphone';

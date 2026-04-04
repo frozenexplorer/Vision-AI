@@ -3,6 +3,7 @@
  * Writes android/local.properties with sdk.dir.
  * Run after prebuild to recreate local.properties (SDK path).
  * Uses ANDROID_HOME or ANDROID_SDK_ROOT, or falls back to default Windows path.
+ * If android/app/release.keystore exists, appends release signing properties.
  */
 const fs = require('fs');
 const path = require('path');
@@ -24,12 +25,33 @@ const localPropsPath = path.join(
   'android',
   'local.properties',
 );
-const content = `## This file must *NOT* be checked into Version Control Systems,
+
+const releaseKeystorePath = path.join(
+  __dirname,
+  '..',
+  'android',
+  'app',
+  'release.keystore',
+);
+const hasReleaseKeystore = fs.existsSync(releaseKeystorePath);
+
+let content = `## This file must *NOT* be checked into Version Control Systems,
 # as it contains information specific to your local configuration.
 #
 # Location of the SDK. This is only used by Gradle.
 sdk.dir=${sdkDir.replace(/\\/g, '\\\\')}
 `;
+
+if (hasReleaseKeystore) {
+  const absPath = path.resolve(releaseKeystorePath).replace(/\\/g, '/');
+  content += `
+# Release signing (from generate-release-keystore.js)
+release.keystore.file=${absPath}
+release.keystore.password=${process.env.RELEASE_KEYSTORE_PASSWORD || 'visionai-release'}
+release.keystore.alias=visionai-release
+release.keystore.keyPassword=${process.env.RELEASE_KEY_PASSWORD || process.env.RELEASE_KEYSTORE_PASSWORD || 'visionai-release'}
+`;
+}
 
 const dir = path.dirname(localPropsPath);
 if (!fs.existsSync(dir)) {

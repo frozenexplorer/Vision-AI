@@ -5,6 +5,7 @@ import { Splash } from '@/screens/Splash';
 import Navigation from './Navigation';
 import AuthStack from '@/screens/Auth/AuthStack';
 import { useAuth } from '@/auth/AuthContext';
+import { useUserProfile } from '@/firestore';
 import { useTheme } from '@/theme/ThemeContext';
 import { navigationRef } from '@/navigators';
 import { logEvent } from '@/utils/logger';
@@ -15,6 +16,8 @@ const MainContainer = () => {
   const [isSplashVisible, setIsSplashVisible] = useState<boolean>(true);
   const { user, loading, authAvailable } = useAuth();
   const { theme } = useTheme();
+  // Keeps `users/{uid}` created and subscribed while signed in (no UI).
+  useUserProfile();
 
   const navTheme = useMemo(
     () => ({
