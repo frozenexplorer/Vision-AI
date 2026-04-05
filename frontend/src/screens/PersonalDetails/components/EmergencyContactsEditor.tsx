@@ -5,6 +5,10 @@ import {
   type EmergencyContactEntry,
 } from '@/firestore';
 import type { ThemeTokens } from '@/theme';
+import {
+  normalizeTelNumberForDial,
+  openPhoneDialer,
+} from '@/utils/openPhoneDialer';
 import { showToast } from '@/utils/toast';
 import { MAX_EC_NAME, MAX_EC_PHONE, MAX_EC_RELATIONSHIP } from '../constants';
 import { ProfileTextField } from './ProfileTextField';
@@ -25,9 +29,7 @@ type Props = {
 };
 
 const contactHasAnyDetail = (c: EmergencyContactEntry) =>
-  c.name.trim() !== '' ||
-  c.phone.trim() !== '' ||
-  c.relationship.trim() !== '';
+  c.name.trim() !== '' || c.phone.trim() !== '' || c.relationship.trim() !== '';
 
 export const EmergencyContactsEditor = ({
   theme,
@@ -107,6 +109,26 @@ export const EmergencyContactsEditor = ({
             placeholder="Phone number"
             keyboardType="phone-pad"
             editable={!inputLocked}
+            endAccessory={
+              <TouchableOpacity
+                className="w-11 h-11 rounded-xl border items-center justify-center"
+                style={{
+                  borderColor: theme.border,
+                  backgroundColor: theme.cardBg,
+                  opacity:
+                    normalizeTelNumberForDial(row.phone) === '' ? 0.35 : 1,
+                }}
+                onPress={() => {
+                  void openPhoneDialer(row.phone);
+                }}
+                disabled={
+                  inputLocked || normalizeTelNumberForDial(row.phone) === ''
+                }
+                accessibilityRole="button"
+                accessibilityLabel={`Call ${row.name.trim() || 'contact'}`}>
+                <Ionicons name="call" size={22} color={theme.primary} />
+              </TouchableOpacity>
+            }
           />
           <ProfileTextField
             theme={theme}

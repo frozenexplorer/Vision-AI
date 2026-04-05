@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Text, TextInput, View, type TextInputProps } from 'react-native';
 import type { ThemeTokens } from '@/theme';
 
@@ -14,6 +15,8 @@ export type ProfileTextFieldProps = {
   minHeight?: number;
   editable: boolean;
   keyboardType?: TextInputProps['keyboardType'];
+  /** Shown to the right of the input (e.g. dialer button). */
+  endAccessory?: ReactNode;
 };
 
 export const ProfileTextField = ({
@@ -29,6 +32,7 @@ export const ProfileTextField = ({
   minHeight,
   editable,
   keyboardType = 'default',
+  endAccessory,
 }: ProfileTextFieldProps) => {
   const inputSurface = {
     backgroundColor: theme.cardBg,
@@ -44,22 +48,27 @@ export const ProfileTextField = ({
         {label}
         {optional && <Text style={{ color: theme.muted }}> (Optional)</Text>}
       </Text>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        onBlur={() => {
-          void onBlur();
-        }}
-        placeholder={placeholder}
-        placeholderTextColor={theme.grey}
-        maxLength={maxLength}
-        multiline={multiline}
-        keyboardType={keyboardType}
-        textAlignVertical={multiline ? 'top' : 'center'}
-        editable={editable}
-        className="text-base font-semibold py-2 px-3 rounded-xl border"
-        style={[inputSurface, minHeight != null ? { minHeight } : null]}
-      />
+      <View className="flex-row items-stretch gap-2">
+        <TextInput
+          value={value}
+          onChangeText={onChangeText}
+          onBlur={() => {
+            void onBlur();
+          }}
+          placeholder={placeholder}
+          placeholderTextColor={theme.grey}
+          maxLength={maxLength}
+          multiline={multiline}
+          keyboardType={keyboardType}
+          textAlignVertical={multiline ? 'top' : 'center'}
+          editable={editable}
+          className="text-base font-semibold py-2 px-3 rounded-xl border flex-1 min-w-0"
+          style={[inputSurface, minHeight != null ? { minHeight } : null]}
+        />
+        {endAccessory != null ? (
+          <View className="justify-center">{endAccessory}</View>
+        ) : null}
+      </View>
     </View>
   );
 };

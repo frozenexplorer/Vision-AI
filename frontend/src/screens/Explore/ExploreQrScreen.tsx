@@ -177,7 +177,10 @@ const ExploreQrScreen = () => {
         logEvent(`${LOG_NAME}_open_settings`, {});
       } catch (e) {
         error(LOG_NAME, 'Failed to open app settings', e);
-        showToast.error("Couldn't open Settings", 'Open Settings manually from your device.');
+        showToast.error(
+          "Couldn't open Settings",
+          'Open Settings manually from your device.',
+        );
       }
     }
     refreshPermissionStatus();

@@ -31,8 +31,8 @@ export const AdditionalSection = ({
   editable,
 }: Props) => (
   <CollapsibleSection
-    title="Additional"
-    subtitle="Optional"
+    title="Work & Living"
+    subtitle="Your work and home life"
     expanded={expanded}
     onToggle={onToggle}
     theme={theme}>
