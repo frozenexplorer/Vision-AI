@@ -145,6 +145,29 @@ export const clearProfileAge = async (uid: string): Promise<void> => {
   }
 };
 
+/** Removes `profile.bloodGroup` from the user document. */
+export const clearProfileBloodGroup = async (uid: string): Promise<void> => {
+  const path = userDocPath(uid);
+  try {
+    const snap = await firestore().collection(USERS_COLLECTION).doc(uid).get();
+    const before = (snap.data() as UserDocument | undefined)?.profile
+      ?.bloodGroup;
+    await firestore().collection(USERS_COLLECTION).doc(uid).update({
+      'profile.bloodGroup': firestore.FieldValue.delete(),
+      'profile.updatedAt': firestore.Timestamp.now(),
+    });
+    logFirestore('delete_field', path, {
+      field: 'profile.bloodGroup',
+      changes: {
+        bloodGroup: { before: serializeForLog(before), after: null },
+      },
+    });
+  } catch (e) {
+    error('Firestore:clearProfileBloodGroup', { path, message: String(e) });
+    throw e;
+  }
+};
+
 export const updateSettings = async (
   uid: string,
   settings: Partial<UserSettings>,

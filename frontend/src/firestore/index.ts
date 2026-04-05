@@ -6,6 +6,7 @@ export {
   updateSettings,
   subscribeToUserDocument,
   clearProfileAge,
+  clearProfileBloodGroup,
 } from './userProfileService';
 export type {
   UserDocument,
@@ -16,6 +17,7 @@ export type {
   AccessibilitySettings,
   FirebaseTimestamp,
   GenderOption,
+  BloodGroupOption,
 } from './types';
 export {
   DEFAULT_VOICE_SETTINGS,
@@ -24,4 +26,6 @@ export {
   DEFAULT_USER_SETTINGS,
   GENDER_OPTIONS,
   labelForGender,
+  BLOOD_GROUP_OPTIONS,
+  labelForBloodGroup,
 } from './types';

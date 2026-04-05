@@ -24,12 +24,50 @@ export const labelForGender = (
   return row?.label ?? 'Not set';
 };
 
+export type BloodGroupOption =
+  | 'A+'
+  | 'A-'
+  | 'B+'
+  | 'B-'
+  | 'AB+'
+  | 'AB-'
+  | 'O+'
+  | 'O-'
+  | 'unknown';
+
+export const BLOOD_GROUP_OPTIONS: { value: BloodGroupOption; label: string }[] =
+  [
+    { value: 'A+', label: 'A+' },
+    { value: 'A-', label: 'A-' },
+    { value: 'B+', label: 'B+' },
+    { value: 'B-', label: 'B-' },
+    { value: 'AB+', label: 'AB+' },
+    { value: 'AB-', label: 'AB-' },
+    { value: 'O+', label: 'O+' },
+    { value: 'O-', label: 'O-' },
+    { value: 'unknown', label: 'Unknown' },
+  ];
+
+export const labelForBloodGroup = (
+  value: BloodGroupOption | undefined | null,
+): string => {
+  if (value == null) return 'Not set';
+  const row = BLOOD_GROUP_OPTIONS.find(o => o.value === value);
+  return row?.label ?? 'Not set';
+};
+
 export interface UserProfile {
   displayName?: string;
   photoURL?: string;
   gender?: GenderOption;
   /** Whole years; optional */
   age?: number;
+  cityOrArea?: string;
+  emergencyContact?: string;
+  bloodGroup?: BloodGroupOption;
+  medicalNotes?: string;
+  occupation?: string;
+  livingSituation?: string;
   updatedAt: FirebaseTimestamp;
 }
 
