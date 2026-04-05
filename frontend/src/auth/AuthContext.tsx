@@ -9,6 +9,7 @@ import { useDispatch } from 'react-redux';
 import type { FirebaseAuthTypes } from '@react-native-firebase/auth';
 import { AUTH_CONFIG } from '@/configs/auth';
 import { logEvent, logApp, error } from '@/utils/logger';
+import { showToast } from '@/utils/toast';
 import { getAuthErrorMessage } from './authErrors';
 import { authActions } from '@/store/slices/authSlice';
 import type { LoginType } from '@/store/slices/authSlice';
@@ -29,18 +30,18 @@ type AuthContextValue = {
   clearAuthError: () => void;
 };
 
-function getLoginTypeFromUser(user: User | null): LoginType | null {
+const getLoginTypeFromUser = (user: User | null): LoginType | null => {
   if (!user?.providerData?.length) return null;
   const hasGoogle = user.providerData.some(p => p?.providerId === 'google.com');
   const hasEmail = user.providerData.some(p => p?.providerId === 'password');
   if (hasGoogle) return 'google';
   if (hasEmail) return 'email';
   return null;
-}
+};
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -171,6 +172,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logEvent('Auth:SignOutSuccess');
     } catch (err) {
       logEvent('Auth:SignOutError', { error: String(err) });
+      showToast.error(
+        "Couldn't sign out",
+        'Something went wrong. Please try again.',
+      );
     }
   }, []);
 
@@ -187,10 +192,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+};
 
-export function useAuth(): AuthContextValue {
+export const useAuth = (): AuthContextValue => {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
-}
+};

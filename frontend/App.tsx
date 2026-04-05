@@ -6,20 +6,22 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Provider } from 'react-redux';
 import { AuthProvider } from './src/auth/AuthContext';
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
+import { AppToast } from './src/components/AppToast';
 import { MainContainer } from './src/screens/Main';
 import { store } from './src/store';
 import { logApp } from './src/utils/logger';
 
-function AppContent() {
+const AppContent = () => {
   const { theme } = useTheme();
   return (
     <View className="flex-1" style={{ backgroundColor: theme.screenBg }}>
       <MainContainer />
+      <AppToast />
     </View>
   );
-}
+};
 
-export default function App() {
+const App = () => {
   useEffect(() => {
     logApp('ready', { mounted: true });
   }, []);
@@ -58,4 +60,6 @@ export default function App() {
       </ThemeProvider>
     </Provider>
   );
-}
+};
+
+export default App;

@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ThemeId, ThemeTokens } from './tokens';
 import { THEMES, THEME_ACCESSIBILITY } from './tokens';
 import { logApp } from '@/utils/logger';
+import { showToast } from '@/utils/toast';
 
 const STORAGE_KEY = '@visionai/theme';
 
@@ -27,7 +28,7 @@ const LEGACY_MIGRATION: Record<string, ThemeId> = {
   modern: 'neon',
 };
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
+export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [themeId, setThemeIdState] = useState<ThemeId>('accessibility');
 
   useEffect(() => {
@@ -51,8 +52,20 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const setTheme = useCallback(async (id: ThemeId) => {
-    setThemeIdState(id);
-    await AsyncStorage.setItem(STORAGE_KEY, id);
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, id);
+      setThemeIdState(id);
+    } catch (err) {
+      logApp('error', {
+        component: 'ThemeProvider',
+        phase: 'theme_persist',
+        error: String(err),
+      });
+      showToast.error(
+        "Couldn't save theme",
+        'Your choice was not saved. Please try again.',
+      );
+    }
   }, []);
 
   const safeThemeId = themeId ?? 'accessibility';
@@ -67,12 +80,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   return (
     <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
-}
+};
 
-export function useTheme(): ThemeContextValue {
+export const useTheme = (): ThemeContextValue => {
   const ctx = useContext(ThemeContext);
   if (!ctx) {
     throw new Error('useTheme must be used within ThemeProvider');
   }
   return ctx;
-}
+};
