@@ -189,6 +189,7 @@ const logFirestore = (
     | 'get'
     | 'create'
     | 'set_merge'
+    | 'set_overwrite'
     | 'update'
     | 'delete_field'
     | 'listen_start'

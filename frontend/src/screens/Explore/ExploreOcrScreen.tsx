@@ -15,7 +15,11 @@ import { useTheme } from '@/theme';
 import { showToast } from '@/utils/toast';
 import { error, logEvent } from '@/utils/logger';
 import { useExplorePermissions } from './hooks';
-import { recognizeTextFromImage } from '@/services/ocrApi';
+import {
+  recognizeTextFromImage,
+  type OcrBlock,
+  type OcrLine,
+} from '@/services';
 
 const ExploreOcrScreen = () => {
   const navigation = useNavigation();
@@ -25,10 +29,10 @@ const ExploreOcrScreen = () => {
   const cameraRef = useRef<Camera | null>(null);
   const { permission, handlePermissionButtonPress } = useExplorePermissions();
   const cameraDevice = useCameraDevice('back');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [ocrText, setOcrText] = useState('');
-  const [isTtsReady, setIsTtsReady] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [ocrText, setOcrText] = useState<string>('');
+  const [isTtsReady, setIsTtsReady] = useState<boolean>(false);
+  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [capturedImagePath, setCapturedImagePath] = useState<string | null>(
     null,
   );
@@ -115,7 +119,9 @@ const ExploreOcrScreen = () => {
 
       const result = await recognizeTextFromImage(imagePath);
       const fallbackText = result.blocks
-        .flatMap(block => block.lines.map(line => line.text))
+        .flatMap((block: OcrBlock) =>
+          block.lines.map((line: OcrLine) => line.text),
+        )
         .join('\n');
       const text = (result.text || fallbackText).trim();
       setOcrText(text);

@@ -24,4 +24,8 @@ export const navigationActions = {
     `${NAV_PREFIX}${ScreenNames.ConnectedDevices}`,
   ),
   toAccessibility: createAction(`${NAV_PREFIX}${ScreenNames.Accessibility}`),
+  toPersonalDetails: createAction(`${NAV_PREFIX}${ScreenNames.PersonalDetails}`),
+  toPrivacyAndSecurity: createAction(
+    `${NAV_PREFIX}${ScreenNames.PrivacyAndSecurity}`,
+  ),
 };

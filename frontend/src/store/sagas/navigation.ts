@@ -76,6 +76,18 @@ const getNavigationPayload = (
         params: { screen: ScreenNames.Accessibility },
       };
       break;
+    case navigationActions.toPersonalDetails.type:
+      navigationPayload = {
+        name: ScreenNames.Settings,
+        params: { screen: ScreenNames.PersonalDetails },
+      };
+      break;
+    case navigationActions.toPrivacyAndSecurity.type:
+      navigationPayload = {
+        name: ScreenNames.Settings,
+        params: { screen: ScreenNames.PrivacyAndSecurity },
+      };
+      break;
     default:
       break;
   }

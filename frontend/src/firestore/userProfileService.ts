@@ -202,6 +202,38 @@ export const updateEmergencyContacts = async (
   }
 };
 
+/**
+ * Deletes all user-entered data for `users/{uid}` while keeping auth login intact.
+ * This overwrites the document with minimal defaults (no optional profile fields).
+ */
+export const resetUserData = async (uid: string): Promise<void> => {
+  const path = userDocPath(uid);
+  try {
+    const ref = firestore().collection(USERS_COLLECTION).doc(uid);
+    const snap = await ref.get();
+    const existing = snap.data() as UserDocument | undefined;
+
+    const now = serverTimestamp();
+    const nextDoc: UserDocument = {
+      profile: { updatedAt: now },
+      settings: { ...DEFAULT_USER_SETTINGS, updatedAt: now },
+      createdAt: existing?.createdAt ?? now,
+    };
+
+    await ref.set(nextDoc, { merge: false });
+    logFirestore('set_overwrite', path, {
+      target: 'users/{uid}',
+      changes: {
+        before: serializeForLog(existing ?? null),
+        after: serializeForLog(nextDoc),
+      },
+    });
+  } catch (e) {
+    error('Firestore:resetUserData', { path, message: String(e) });
+    throw e;
+  }
+};
+
 export const updateSettings = async (
   uid: string,
   settings: Partial<UserSettings>,
