@@ -1,4 +1,5 @@
 import { NativeModules } from 'react-native';
+import { error, logApi } from '@/utils/logger';
 
 export interface OcrBounds {
   left: number;
@@ -89,10 +90,31 @@ const normalizeResult = (value: unknown): OcrResult => {
 export const recognizeTextFromImage = async (
   imagePath: string,
 ): Promise<OcrResult> => {
+  const endpoint = 'native:OcrModule.recognizeTextFromFile';
+  logApi('request', endpoint, { imagePath: imagePath.slice(0, 80) });
   const native = NativeModules?.OcrModule as OcrNativeModule | undefined;
   if (typeof native?.recognizeTextFromFile !== 'function') {
+    logApi('error', endpoint, { message: 'OCR native module missing' });
     throw new Error('OCR module is not available on this build.');
   }
-  const raw = await native.recognizeTextFromFile(imagePath);
-  return normalizeResult(raw);
+  const start = Date.now();
+  try {
+    const raw = await native.recognizeTextFromFile(imagePath);
+    const normalized = normalizeResult(raw);
+    logApi('response', endpoint, {
+      durationMs: Date.now() - start,
+      chars: normalized.text.length,
+      blocks: normalized.blocks.length,
+      lines: normalized.blocks.reduce((sum, b) => sum + b.lines.length, 0),
+    });
+    return normalized;
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : String(e);
+    logApi('error', endpoint, {
+      durationMs: Date.now() - start,
+      message,
+    });
+    error('OCR:NativeRecognizeError', { message });
+    throw e;
+  }
 };

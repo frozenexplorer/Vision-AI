@@ -99,6 +99,7 @@ const ExploreOcrScreen = () => {
   );
 
   const stopSpeaking = useCallback(() => {
+    logEvent('OCR:StopSpeaking', {});
     setIsSpeaking(false);
     void Tts.stop();
   }, []);
@@ -107,6 +108,7 @@ const ExploreOcrScreen = () => {
     if (!cameraRef.current || !canUseCamera || isProcessing) return;
 
     try {
+      logEvent('OCR:CaptureAndReadClicked', {});
       setIsProcessing(true);
       setOcrText('');
       const photo = await cameraRef.current.takePhoto();
@@ -127,6 +129,7 @@ const ExploreOcrScreen = () => {
       setOcrText(text);
 
       if (!text) {
+        logEvent('OCR:NoTextFound', {});
         showToast.info('No text found', 'Try a clearer image or better light.');
       } else {
         logEvent('OCR:TextExtracted', { chars: text.length });
@@ -142,9 +145,12 @@ const ExploreOcrScreen = () => {
   }, [canUseCamera, isProcessing, speakExtractedText]);
 
   const handleClearResult = useCallback(() => {
+    logEvent('OCR:ClearResult', {
+      hadText: Boolean(ocrText?.trim()),
+    });
     setOcrText('');
     setCapturedImagePath(null);
-  }, []);
+  }, [ocrText]);
 
   return (
     <View
