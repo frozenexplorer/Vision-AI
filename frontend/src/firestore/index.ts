@@ -8,6 +8,7 @@ export {
   clearProfileAge,
   clearProfileBloodGroup,
   updateEmergencyContacts,
+  resetUserData,
 } from './userProfileService';
 export type {
   UserDocument,
