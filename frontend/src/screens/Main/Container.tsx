@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { Splash } from '@/screens/Splash';
@@ -36,8 +36,13 @@ const MainContainer = () => {
     [theme],
   );
 
+  const lastFocusedRouteKeyRef = useRef<string | null>(null);
+
   const onNavStateChange = useCallback(() => {
     const route = navigationRef.getCurrentRoute();
+    if (route?.key && lastFocusedRouteKeyRef.current === route.key) return;
+    if (route?.key) lastFocusedRouteKeyRef.current = route.key;
+
     if (route?.name) {
       logEvent('Navigation:ScreenFocus', {
         screen: route.name,

@@ -57,6 +57,7 @@ const Tabs = () => {
         component={ExploreStack}
         options={{
           title: 'EXPLORE',
+          popToTopOnBlur: true,
           tabBarIcon: ({ focused }) => (
             <Ionicons
               name={focused ? 'compass' : 'compass-outline'}

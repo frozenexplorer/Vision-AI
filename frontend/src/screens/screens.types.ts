@@ -41,6 +41,7 @@ export type ISettingsStackParamList = {
   [ScreenNames.SettingsList]: undefined;
   [ScreenNames.Profile]: undefined;
   [ScreenNames.PersonalDetails]: undefined;
+  [ScreenNames.PrivacyAndSecurity]: undefined;
   [ScreenNames.VoiceAndAudio]: undefined;
   [ScreenNames.VisionSettings]: undefined;
   [ScreenNames.ConnectedDevices]: undefined;

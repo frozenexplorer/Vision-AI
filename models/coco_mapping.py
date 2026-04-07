@@ -1,23 +1,108 @@
-# COCO class IDs to VisionApp labels
-COCO_ID_TO_APP = {
-    0: "person",
-    1: "bike",
-    2: "vehicle",
-    5: "vehicle",
-    7: "vehicle",
-    9: "traffic_light",
-    11: "sign",
-    56: "chair",
-    60: "table",
-}
+"""COCO class metadata used by backend detection responses.
 
-# Confidence threshold per class (can tune later)
-CONF_THRESHOLDS = {
-    "person": 0.4,
-    "vehicle": 0.5,
-    "bike": 0.5,
-    "chair": 0.6,
-    "table": 0.6,
-    "traffic_light": 0.5,
-    "sign": 0.5,
-}
+The previous mapping intentionally collapsed detections into a very small
+category set. This caused the API to drop most model outputs, which made
+object detection appear to have only a few classes.
+"""
+
+COCO_LABELS = [
+    "person",
+    "bicycle",
+    "car",
+    "motorcycle",
+    "airplane",
+    "bus",
+    "train",
+    "truck",
+    "boat",
+    "traffic_light",
+    "fire_hydrant",
+    "stop_sign",
+    "parking_meter",
+    "bench",
+    "bird",
+    "cat",
+    "dog",
+    "horse",
+    "sheep",
+    "cow",
+    "elephant",
+    "bear",
+    "zebra",
+    "giraffe",
+    "backpack",
+    "umbrella",
+    "handbag",
+    "tie",
+    "suitcase",
+    "frisbee",
+    "skis",
+    "snowboard",
+    "sports_ball",
+    "kite",
+    "baseball_bat",
+    "baseball_glove",
+    "skateboard",
+    "surfboard",
+    "tennis_racket",
+    "bottle",
+    "wine_glass",
+    "cup",
+    "fork",
+    "knife",
+    "spoon",
+    "bowl",
+    "banana",
+    "apple",
+    "sandwich",
+    "orange",
+    "broccoli",
+    "carrot",
+    "hot_dog",
+    "pizza",
+    "donut",
+    "cake",
+    "chair",
+    "couch",
+    "potted_plant",
+    "bed",
+    "dining_table",
+    "toilet",
+    "tv",
+    "laptop",
+    "mouse",
+    "remote",
+    "keyboard",
+    "cell_phone",
+    "microwave",
+    "oven",
+    "toaster",
+    "sink",
+    "refrigerator",
+    "book",
+    "clock",
+    "vase",
+    "scissors",
+    "teddy_bear",
+    "hair_drier",
+    "toothbrush",
+]
+
+COCO_ID_TO_APP = {index: label for index, label in enumerate(COCO_LABELS)}
+
+# Global baseline + class-specific overrides for frequently noisy/small objects.
+DEFAULT_CONFIDENCE_THRESHOLD = 0.35
+CONF_THRESHOLDS = {label: DEFAULT_CONFIDENCE_THRESHOLD for label in COCO_LABELS}
+CONF_THRESHOLDS.update(
+    {
+        "traffic_light": 0.3,
+        "stop_sign": 0.3,
+        "parking_meter": 0.3,
+        "sports_ball": 0.3,
+        "bottle": 0.3,
+        "cup": 0.3,
+        "fork": 0.3,
+        "knife": 0.3,
+        "spoon": 0.3,
+    }
+)
