@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import { ScreenNames } from '@/configs/navigation';
 
-type FeatureId = 'objectDetection' | 'ocr' | 'tts';
+type FeatureId = 'objectDetection' | 'qrScanner' | 'ocr' | 'tts';
 
 type Feature = {
   id: FeatureId;
@@ -25,7 +25,7 @@ const FEATURES: Feature[] = [
     subtitle: 'Real-time AI Vision',
     description:
       'Detect and identify objects in your environment instantly using YOLOv8 neural network.',
-    icon: '⬡',
+    icon: 'OBJ',
     status: 'active',
     accentColor: '#22C55E',
     stats: [
@@ -35,11 +35,11 @@ const FEATURES: Feature[] = [
     ],
   },
   {
-    id: 'ocr',
+    id: 'qrScanner',
     title: 'QR & Barcode',
     subtitle: 'Instant Code Scanner',
     description: 'Scan QR codes and barcodes instantly',
-    icon: '▦',
+    icon: 'QR',
     status: 'active',
     accentColor: '#6366F1',
     stats: [
@@ -49,12 +49,27 @@ const FEATURES: Feature[] = [
     ],
   },
   {
+    id: 'ocr',
+    title: 'Photo to Text',
+    subtitle: 'On-device OCR',
+    description:
+      'Capture an image and extract readable text instantly on your phone.',
+    icon: 'OCR',
+    status: 'active',
+    accentColor: '#6366F1',
+    stats: [
+      { label: 'Engine', value: 'ML Kit' },
+      { label: 'Mode', value: 'Capture' },
+      { label: 'Output', value: 'Text' },
+    ],
+  },
+  {
     id: 'tts',
     title: 'Text to Speech',
     subtitle: 'Neural Voice Synthesis',
     description:
       'Convert any text into natural-sounding speech with multiple voice profiles and languages.',
-    icon: '◎',
+    icon: 'TTS',
     status: 'active',
     accentColor: '#F59E0B',
     stats: [
@@ -130,7 +145,9 @@ const FeatureCard = ({
         onPress={() => onSelect(feature.id)}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        className={`rounded-2xl p-5 overflow-hidden border ${!isActive ? 'opacity-65' : ''}`}
+        className={`rounded-2xl p-5 overflow-hidden border ${
+          !isActive ? 'opacity-65' : ''
+        }`}
         style={{ backgroundColor: theme.cardBg, borderColor: theme.border }}>
         <View
           className="absolute top-0 left-5 right-5 h-px"
@@ -143,7 +160,9 @@ const FeatureCard = ({
               borderColor: accent + '40',
               backgroundColor: theme.darkBg,
             }}>
-            <Text className="text-[22px]" style={{ color: accent }}>
+            <Text
+              className="text-[12px] font-bold tracking-wide"
+              style={{ color: accent }}>
               {feature.icon}
             </Text>
           </View>
@@ -210,7 +229,7 @@ const FeatureCard = ({
             <Text
               className="text-[13px] font-bold tracking-wide"
               style={{ color: accent }}>
-              Launch →
+              Launch {'->'}
             </Text>
           </View>
         )}
@@ -221,7 +240,8 @@ const FeatureCard = ({
 
 const FEATURE_TO_SCREEN: Record<FeatureId, keyof typeof ScreenNames> = {
   objectDetection: ScreenNames.ExploreObjectDetection,
-  ocr: ScreenNames.ExploreQrScanner,
+  qrScanner: ScreenNames.ExploreQrScanner,
+  ocr: ScreenNames.ExploreOcr,
   tts: ScreenNames.ExploreTts,
 };
 

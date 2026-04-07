@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -21,23 +22,48 @@ except ImportError:  # pragma: no cover - fallback for partial checkouts.
 class DetectorService:
     def __init__(self) -> None:
         self.model = None
+        self.model_path: Path | None = None
         if YOLO is None:
             return
 
-        model_path = Path(__file__).resolve().parents[3] / "models" / "yolov8n.pt"
-        if not model_path.exists():
+        model_path = self._resolve_model_path()
+        if model_path is None:
             return
 
         try:
             self.model = YOLO(str(model_path))
+            self.model_path = model_path
         except Exception:
             self.model = None
+            self.model_path = None
+
+    def _resolve_model_path(self) -> Path | None:
+        models_root = Path(__file__).resolve().parents[3] / "models"
+        if not models_root.exists():
+            return None
+
+        explicit = os.getenv("VISIONAI_DETECT_MODEL_PATH", "").strip()
+        if explicit:
+            candidate = Path(explicit)
+            if not candidate.is_absolute():
+                candidate = models_root / candidate
+            if candidate.exists():
+                return candidate
+
+        # Prefer higher-capacity variants when available, then fall back.
+        default_candidates = ("yolov8x.pt", "yolov8l.pt", "yolov8m.pt", "yolov8s.pt", "yolov8n.pt")
+        for name in default_candidates:
+            candidate = models_root / name
+            if candidate.exists():
+                return candidate
+
+        return None
 
     def detect(self, image: Any) -> list[dict[str, Any]]:
         if self.model is None:
             return []
 
-        results = self.model(image, verbose=False)[0]
+        results = self.model(image, verbose=False, imgsz=640, max_det=120)[0]
         detections: list[dict[str, Any]] = []
         boxes = results.boxes
 
@@ -59,6 +85,7 @@ class DetectorService:
             detections.append(
                 {
                     "label": label,
+                    "class_id": cls_id,
                     "confidence": round(confidence, 2),
                     "box": [x1, y1, x2, y2],
                 }
